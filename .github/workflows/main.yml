@@ -1,0 +1,56 @@
+name: merge-main
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      #   - name: Setup Actor
+      #     run: echo "GITHUB_ACTOR=$(echo $GITHUB_ACTOR)" >> $GITHUB_ENV
+
+      #   - name: Setup Node
+      #     uses: actions/setup-node@v3
+      #     with:
+      #       registry-url: 'https://npm.pkg.github.com'
+      #       cache: npm
+
+      - name: Install Deps
+        run: npm ci
+
+      #   - name: Check commit
+      #     run: git log -1 --pretty=%B | pnpm commitlint
+
+      - name: Creating Release
+        id: release
+        uses: google-github-actions/release-please-action@v3
+        with:
+          release-type: simple
+
+      - name: Build Packages
+        run: pnpm nx run-many --target build
+
+      - name: Publish Packages
+        if: ${{ steps.release.outputs.releases_created }}
+        run: |
+          npm publish
+        #   pnpm nx run-many --target publish --tag latest
+
+    #   - name: Setup Git User
+    #     if: ${{ steps.release.outputs.releases_created }}
+    #     run: |
+    #       git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+    #       git config --global user.name $GITHUB_ACTOR
