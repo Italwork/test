@@ -41,7 +41,7 @@ jobs:
           release-type: simple
 
       - name: Build Packages
-        run: pnpm nx run-many --target build
+        run: npm build
 
       - name: Publish Packages
         if: ${{ steps.release.outputs.releases_created }}
